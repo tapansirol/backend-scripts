@@ -1,0 +1,223 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "velocity.fullname" . }}-nginx-conf
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  server.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIDqDCCApACCQDsDBUo6HOomDANBgkqhkiG9w0BAQsFADCBlTELMAkGA1UEBhMC
+    VVMxHzAdBgNVBAgMFkhDTCBVcmJhbkNvZGUgVmVsb2NpdHkxDTALBgNVBAcMBENh
+    cnkxDDAKBgNVBAoMA0hDTDESMBAGA1UECwwJVXJiYW5Db2RlMREwDwYDVQQDDAhW
+    ZWxvY2l0eTEhMB8GCSqGSIb3DQEJARYSc2thbG1hZEB1cy5pYm0uY29tMB4XDTE4
+    MDMyNzE3MjkwMVoXDTE5MDMyNzE3MjkwMVowgZUxCzAJBgNVBAYTAlVTMR8wHQYD
+    VQQIDBZIQ0wgVXJiYW5Db2RlIFZlbG9jaXR5MQ0wCwYDVQQHDARDYXJ5MQwwCgYD
+    VQQKDANIQ0wxEjAQBgNVBAsMCVVyYmFuQ29kZTERMA8GA1UEAwwIVmVsb2NpdHkx
+    ITAfBgkqhkiG9w0BCQEWEnNrYWxtYWRAdXMuaWJtLmNvbTCCASIwDQYJKoZIhvcN
+    AQEBBQADggEPADCCAQoCggEBAMHtj/pK4eydsg2Zoq5qfLsv4UrLhpddE8t1g6pE
+    PTyBPOIY94PzB8oqX9CWrpnu9KNsjR1BZSWzcAhOLQ/fHjhy9JiPQnMRn7Pn26L8
+    XkjT6LtwjiRarOzpYj19csXRvToJsRQWNrE91/I0umQEHP3ySk1iEyHpjvo6QDG9
+    OMNSa1z3PiEsGyviDzvbNpurro42+Y8sBMnOCzlDkq3pMS/hZU8iFx22ib0BCfma
+    6h+gnQDodRcso9zbVqovwXbGwiIFw5PX/JG3zxYwkEw8VUua1a25t8tL2ksj6VMp
+    QctdJmJ+6bzQ5+ZCZ/08K54/q5yYiR6PPqcOy49je5d+UlcCAwEAATANBgkqhkiG
+    9w0BAQsFAAOCAQEAR1OzjUwjcA1cWun/Nrfus1HIkm/+lD13Ynx6kiT2AYOr4E+B
+    i15c987vHsdYTgEzdQDcnsWcjDsjAWyu3dBgJ/zSjdvq3vGFohg23u1vPaV0oQqn
+    pv6NVNgAc6GnEx+zfyGMDEkxbevRenJe2UPL3lIWh9By80TkhG3Zmvi7MlXL30CJ
+    LhAm7cL2Le/Q7WTFh2gKjWEUW413h2QEMM3q8AzNh5XRVoZ20b+NLcYmsjmPBVsCWxBhuB1DVHQ/trmrYO1HG0ToNBtyzCVRI/46MTrVZO7M9EnzGku37c0oh/ekCMej
+    jMPQmNY4JKAX3gMR8GsBIRtrTOEFaR+Mafp4uw==
+    -----END CERTIFICATE-----
+  server.key: |
+    -----BEGIN PRIVATE KEY-----
+    MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDB7Y/6SuHsnbIN
+    maKuany7L+FKy4aXXRPLdYOqRD08gTziGPeD8wfKKl/Qlq6Z7vSjbI0dQWUls3AI
+    Ti0P3x44cvSYj0JzEZ+z59ui/F5I0+i7cI4kWqzs6WI9fXLF0b06CbEUFjaxPdfy
+    NLpkBBz98kpNYhMh6Y76OkAxvTjDUmtc9z4hLBsr4g872zabq66ONvmPLATJzgs5
+    Q5Kt6TEv4WVPIhcdtom9AQn5muofoJ0A6HUXLKPc21aqL8F2xsIiBcOT1/yRt88W
+    MJBMPFVLmtWtubfLS9pLI+lTKUHLXSZifum80OfmQmf9PCueP6ucmIkejz6nDsuP
+    Y3uXflJXAgMBAAECggEAIbfvl8JbY+vLYKf87DyhsV5S2tFmdnz9ixvEp98zkoia
+    EGns52ljSlhxzm/UrfkpWhzusE6FireXXCpTlXXi6Ee8laYbFKzUytAelUkyD5Gg
+    3q5kWJfXh13Q8gYU5aZhM20p9+cg3VJ2cKuQWQGKFPGCz8+kqfnVHVbxgHR5ISSu
+    /rTyDxDteHGQTg3LR/xG6N/bn4UZFuGNruUZ1hs26EYXFZi2U5lgX0X3c+QdjkdA
+    9UCUrKdxYS4MlFiRU4ZKCfNniNQatSbw4Ydjvl45nuki6j9yRtdmusE1IbLOaLxn
+    lXBoUTqr1iLFh2YjTj8+iqQBTRvWUwN1+C4VAXoIGQKBgQDh+C3WsvuR/kjACqC7
+    l5IzgzqAibCclbhP89V+VIOkOi4KTN1f/YKqCEVirE5ydybViqBzNgENzVBpKmVD
+    9P/Ps/yoM6tOtD1UgpqeM4Dgv+f6dIZjVmrkZ9oXI4T9aFJwb7cQlkVUDp288LDk
+    J6RoJ96Mi4DnFuSCUE+P57ypVQKBgQDbs0jE3cGKso1F8eUDKjY3jToQNYVHRM6/
+    r9sz7oZZxXGW6QVuK/WCRx0jvol5mpLSy8ZV1GgtG6opLrU46otxwv3z8VAeUvvF
+    Fe1mUZJo/sChxO5NdpIo0JNa044RfT3KjZ3R4TcmGa36A1zqfYlAIjJWl9aSXClG
+    iTyltwMc+wKBgQDFlRO/n1CJHybNhH12idm0YRJOQhbDU8aNYk9S3uMcPiLzrrIC
+    tNADjKfe13rga37xSP1yv828G8Irsn5JJXhoTKCnEka/0qmts2Uu3ynZWvOj8y9u
+    vKlKfeQcR1qJmSY8WfJf9oU4Mm+KPYrudBs1V2cozPIxHbtAlqh6084K4QKBgHMm
+    3ydAS+cUevOEO9KS12P6g8pnIvod2HekBrKLfKOk10qPzCbYp4+nEmDfx1KTcA1I
+    fSYTdJ7f9yoqrxWr6XaxC0ZG3wVl3UyJl6qfaqvZisG/ZF/5m9YErJdYdwg3qqF1
+    5JhTAQLZRtTZ2mOVdNDGm7fDUdXYtFGiMMVyzRDtAoGAEUvr6/ciRGuv6VkE6W5k
+    AbpSdmPOTPy70zs6mi/NA6MsHEyzd+FGX6YdoeDxahFFGXIWFf+zvTzkmfvarMIa
+    5x8dgVRXhv/6jpipHIJESHh33nbjBbTmAyiE9acJhVBg5D1blhx2CUeq41k0qYOT
+    qCcW7ex/7H+gUTGRTdzDcxo=
+    -----END PRIVATE KEY-----
+  nginx.conf: |
+    #user  velocity;
+    worker_processes  1;
+
+    error_log /dev/stdout info;
+
+    pid        /opt/bitnami/nginx/pid/nginx.pid;
+
+    events {
+        worker_connections  1024;
+    }
+
+    http {
+        access_log /dev/stdout;
+
+        ssl_session_cache   shared:SSL:10m;
+        ssl_session_timeout 10m;
+        limit_req_zone      $binary_remote_addr zone=perip:10m rate=12r/m;
+
+        upstream release-events-ui {
+            server release-events-ui:3010;
+        }
+        upstream application-api {
+            server application-api:3499;
+        }
+        upstream continuous-release-consumer {
+            server continuous-release-consumer:3411;
+        }
+        upstream reporting-sync-api {
+            server reporting-sync-api:3499;
+        }
+        upstream security-api {
+            server security-api:3911;
+        }
+        upstream release-events-api {
+            server release-events-api:8080;
+        }
+        upstream continuous-release-ui {
+            server continuous-release-ui:80;
+        }
+        upstream reporting-ui {
+            ip_hash;
+            server reporting-ui:80;
+        }
+        upstream reporting-consumer {
+            server reporting-consumer:6004;
+        }
+        upstream multi-app-pipeline-api {
+            server multi-app-pipeline-api:9090;
+        }
+
+        map $http_upgrade $connection_upgrade {
+            default upgrade;
+            '' close;
+        }
+
+        server {
+            listen       8080;
+            server_name  velocity-router;
+
+            ssl_certificate     /opt/bitnami/nginx/conf/ssl/server.crt;
+            ssl_certificate_key /opt/bitnami/nginx/conf/ssl/server.key;
+            ssl_protocols       TLSv1.2;
+            # ssl on;
+            keepalive_timeout   70;
+            client_max_body_size 20m;
+            underscores_in_headers on;
+
+            set $downstream_x_proxy_from https://$host$request_uri;
+            if ($http_x_proxy_from) {
+                set $downstream_x_proxy_from $http_x_proxy_from;
+            }
+            proxy_set_header X-Proxy-From $downstream_x_proxy_from;
+
+            proxy_set_header        Host $host;
+            proxy_set_header        X-Real-IP $remote_addr;
+            proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header        X-Forwarded-Proto https;
+
+            proxy_http_version      1.1;
+            proxy_set_header        Upgrade $http_upgrade;
+            proxy_set_header        Connection $connection_upgrade;
+
+            proxy_pass_request_headers on;
+
+            location ~* ^((?!release-events-api).)*\/graphql(\/?)$ {
+                deny all;
+                return 403;
+            }
+
+            location / {
+                proxy_pass          http://release-events-ui;
+            }
+
+            location  /release-events-api/ {
+                proxy_pass         http://release-events-api/;
+                mirror              /mirror;
+            }
+
+            location  /api/ {
+                proxy_pass         http://release-events-api/api/;
+                mirror              /mirror;
+            }
+
+            location  ^~ /graphql {
+                proxy_pass         http://release-events-api/graphql;
+                mirror              /mirror;
+            }
+
+            location  /application-api/ {
+                proxy_pass         http://application-api/;
+                mirror              /mirror;
+            }
+
+            location  /continuous-release-consumer/ {
+                proxy_pass         http://continuous-release-consumer/;
+            }
+
+            location  /reporting-sync-api/ {
+                proxy_pass         http://reporting-sync-api/;
+            }
+
+            location  /security-api/ {
+                proxy_pass         http://security-api/;
+                mirror              /mirror;
+            }
+
+            location /deploymentPlans {
+                proxy_pass          http://continuous-release-ui;
+                mirror              /mirror;
+            }
+
+            location  /reports/ {
+                proxy_pass         http://reporting-ui;
+                mirror              /mirror;
+            }
+
+            location  /reporting-consumer/workflowKey/ {
+                deny               all;
+                return             403;
+            }
+ 
+            location /reporting-consumer/qualityData/artifact/ {
+                deny               all;
+                return             403;
+            }
+            
+            location  /reporting-consumer/ {
+                proxy_pass         http://reporting-consumer/;
+            }
+
+            location /multi-app-pipeline-api/ {
+                proxy_pass          http://multi-app-pipeline-api/;
+                mirror              /mirror;
+            }
+            location /mirror {
+                internal;
+                proxy_pass  http://security-api/api/v2/extendSession;
+                limit_req zone=perip;
+            }
+        }
+    }

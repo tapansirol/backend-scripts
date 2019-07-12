@@ -1,0 +1,48 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "velocity.fullname" . }}-continuous-release-poller
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "velocity.name" . }}-continuous-release-poller
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "velocity.name" . }}-continuous-release-poller
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      {{- include "pod.imagePullSecrets" . | indent 6 }}
+      initContainers:
+        - name: mongo-init
+          image: "busybox:latest"
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", '{{ include "mongodb.test.command" . }}']
+      containers:
+        - name: continuous-release-poller
+          image: '{{ .Values.images.continuous_release_poller }}'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 6004
+          env:
+            - name: NODE_ENV
+              value: prod
+            - name: LOG_LEVEL
+              value: '{{ .Values.loglevel }}'
+            - name: MONGO_URL
+              value: {{ include "mongodb.url" . }}
+            - name: APP_API_URL
+              value: http://application-api:3499
+            - name: APP_API_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: AMQP_URL
+              value: {{ include "rabbitmq.url" . }}
+            - name: BRANDING
+              value: HCL

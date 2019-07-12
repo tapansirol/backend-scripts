@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "velocity.fullname" . }}-continuous-release-ui-env
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}-continuous-release-ui
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:

@@ -1,0 +1,72 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "velocity.fullname" . }}-release-events-ui
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}-release-events-ui
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "velocity.name" . }}-release-events-ui
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "velocity.name" . }}-release-events-ui
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: release-events-api-init
+          image: "busybox:latest"
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until wget -T 2 release-events-api:8080/api/v1/status; do echo waiting for release-events-api service; sleep 2; done;']
+      {{- if not .Values.url.domain }}
+        - name: dm-init
+          image: {{ .Values.images.domainMapper  }}
+          imagePullPolicy: Always
+          env:
+            - name: "CONFIGMAP_NAME"
+              value: {{ include "velocity.fullname" . }}-release-events-ui-env
+            - name: "NAMESPACE_NAME"
+              value: {{ .Release.Namespace }}
+            - name: "RELEASE_NAME"
+              value: {{ .Release.Name }}
+            - name: "SERVICE_NAME"
+              value: {{ include "velocity.fullname" . }}
+            - name: "ENV_NAME"
+              value: "HOME_URL"
+      serviceAccountName: {{ include "velocity.fullname" . }}-argo
+      {{- end }}
+      {{- include "pod.imagePullSecrets" . | indent 6 }}
+      containers:
+        - name: release-events-ui
+          image: '{{ .Values.images.release_events_ui }}'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3010
+          envFrom:
+            - configMapRef:
+                name: {{ include "velocity.fullname" . }}-release-events-ui-env
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: '3010'
+            - name: LOG_LEVEL
+              value: '{{ .Values.loglevel }}'
+            - name: release_events_api__host
+              value: '{{ template "root.url.releaseEventsApi" . }}'
+            - name: security_api__host
+              value: '{{ template "root.url.securityApiHost" . }}'
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: '0'
+            - name: version
+              value: '{{ .Chart.Version }}'
+            - name: pluginFramework
+              value: 'true'
+            - name: BRANDING
+              value: HCL

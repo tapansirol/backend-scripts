@@ -1,0 +1,401 @@
+## Metadata for UrbanCode Deploy server configuration
+## This metadata is used to augment the value.yaml to drive IPC UI for configuration of the Helm chart installation
+
+## Architecture configuration metadata
+arch: 
+  __metadata:
+    name: "Architecture"
+    label: "Worker node architecture"
+    description: "Worker node architecture to deploy to. The helm chart will try to detect the architecture based on the master node. Choose an explicit architecture here to overwrite it."
+    type: "string"
+    immutable: false
+    required: false
+    options:
+      - label: "AMD64 platforms"
+        value: "amd64"
+      - label: "Power 64 LE platforms"
+        value: "ppc64le"
+      - label: "zLinux platforms"
+        value: "s390x"
+
+## Image configuration metadata
+image:
+  __metadata:
+    label: "Docker Image Configuration"
+    description: "Configuration data for accessing the docker image"
+  repository:
+    __metadata:
+      name: "Image repository"
+      label: "Image repository"
+      description: "Docker image location"
+      type: "string"
+      immutable: false
+      required: true
+  tag:
+    __metadata:
+      name: "Docker image tag"
+      label: "Docker image tag"
+      description: "Docker image tag. Do not include the architecture suffix (for example, if the tag is @serverbuildversion@.@serverbuildlife@-x86_64, enter @serverbuildversion@.@serverbuildlife@)."
+      type: "string"
+      immutable: false
+      required: true
+  pullPolicy:
+    __metadata:
+      name: "pullPolicy"
+      label: "Docker image pull policy"
+      description: "Always, Never, or IfNotPresent. Defaults to Always"
+      type: "string"
+      immutable: false
+      required: true
+      options:
+      - label: "Always"
+        value: "Always"
+      - label: "Never"
+        value: "Never"
+      - label: "IfNotPresent"
+        value: "IfNotPresent"
+  secret:
+    __metadata:
+      name: "Image pull secret"
+      label: "Image pull secret"
+      description: "Name of an image pull secret, if required"
+      type: "string"
+      immutable: false
+      required: false
+
+## Service configuration metadata
+service:
+  __metadata:
+    label: "Service Type Configuration Data"
+    description: "Configuration data for the service definition."
+  type:
+    __metadata:
+      name: "Type"
+      label: "Service Type"
+      description: "This is the Service Type. Only choose Load Balancer if your cluster supports load balancers."
+      type: "string"
+      immutable: false
+      required: true
+      options:
+        - label: "Node Port"
+          value: "NodePort"
+        - label: "Load Balancer"
+          value: "LoadBalancer"
+
+## Database configuration metadata
+database:
+  __metadata:
+    label: "UCD Database Definition"
+    description: "Configuration data for UCD database instance"
+  type:
+    __metadata:
+      name: "Type"
+      label: "Database Type"
+      description: "This is the type of database UCD will use to persist data."
+      type: "string"
+      immutable: false
+      required: true
+      options:
+        - label: "db2"
+          value: "db2"
+        - label: "db2zos"
+          value: "db2zos"
+        - label: "mysql"
+          value: "mysql"
+        - label: "mariadb"
+          value: "mariadb"
+        - label: "oracle"
+          value: "oracle"
+        - label: "sqlserver"
+          value: "sqlserver"
+  name:
+    __metadata:
+      name: "databasename"
+      label: "Database name"
+      description: "The name of the database to connect to. If using an Oracle database, enter the SID."
+      type: "string"
+      immutable: false
+      required: true
+  hostname:
+    __metadata:
+      name: "hostname"
+      label: "Database host name"
+      description: "The hostname or IP address of the database server"
+      type: "string"
+      immutable: false
+      required: true
+  username:
+    __metadata:
+      name: "username"
+      label: "Database user name"
+      description: "The user name used to login to the database server. If using an Oracle database, you may also need to specify a role (for example, 'sys as sysdba')"
+      type: "string"
+      immutable: false
+      required: true
+  password:
+    __metadata:
+      name: "password"
+      label: "Database user password"
+      description: "The password used to login to the database server"
+      type: "password"
+      immutable: false
+      required: true
+  port:
+    __metadata:
+      name: "Databaseport"
+      label: "Database port"
+      description: "This is the port number the database server listens at"
+      type: "string"
+      immutable: false
+      required: true
+  jdbcConnUrl:
+    __metadata:
+      name: "jdbcConnUrl"
+      label: "JDBC Connection URL"
+      description: "The JDBC Connection URL used to connect to the database used by the UCD server. This value is normally constructed using the database type and other database field values, but must be specified here when using Oracle RAC/ORAAS or SQL Server with Integrated Security."
+      type: "string"
+      immutable: false
+      required: false
+
+## Secure connections metadata
+secureConnections:
+  __metadata:
+    label: "Configuration for UCD Server Connections"
+    description: "Specify whether UCD server connections are required to be secure."
+  required:
+    __metadata:
+      name: "RequireSecureConnections"
+      label: "Require secure server connections"
+      description: "Set to true to require secure connection to the UCD server"
+      type: "boolean"
+      immutable: false
+      required: false
+
+## Security configuration metadata
+security:
+  __metadata:
+    label: "Configuration for UCD Administrator Security"
+    description: "Specify the initial password to be used by the UCD Administrator."
+  ucdInitPassword:
+    __metadata:
+      name: "InitialUCDPassword"
+      label: "Initial UCD Administrator Password"
+      description: "The initial administrator user password"
+      type: "password"
+      immutable: false
+      required: true
+
+## Persistent volume config for database drivers
+extLibVolume:
+  __metadata:
+    label: "UrbanCode Deploy lib/ext Directory's Persistent Volume"
+    description: "Configuration data describing the persistent storage that contains a copy of the UCD lib/ext directory."
+  name:
+    __metadata:
+      name: "name"
+      label: "Persistent Volume Name"
+      description: "Name of the Persistent Volume to create to hold the UCD lib/ext directory"
+      type: "string"
+      immutable: false
+      required: false
+  existingClaimName:
+    __metadata:
+      name: "existingClaimName"
+      label: "Existing Claim Name"
+      description: "Name of an existing Persistent Volume Claim that references a Persistent Volume that contains the database driver .jars used to connect to the UCD database."
+      type: "string"
+      immutable: false
+      required: false
+  configMapName:
+    __metadata:
+      name: "configMapName"
+      label: "ConfigMap Name"
+      description: "Name of an existing ConfigMap which contains a script named script.sh. This script is run before UrbanCode Deploy server installation and is useful for copying database driver .jars to a Persistent Volume."
+      type: "string"
+      immutable: false
+      required: false
+  storageClassName:
+    __metadata:
+      name: "storageClassName"
+      label: "Storage Class Name"
+      description: "Name of the storage class to use to dynamically create the Persistent Volume that will hold the UCD lib/ext directory.  The persistence.useDynamicProvisioning field must be set to true for this to be used."
+      type: "string"
+      immutable: false
+      required: false
+  size:
+    __metadata:
+      name: "size"
+      label: "Persistent Volume Size"
+      description: "Size of the Persistent Volume that will hold the UCD lib/ext directory. Memory is measured in bytes. You can express memory as a plain integer or as a fixed-point integer using one of these suffixes: E, P, T, G, M, K. You can also use the power-of-two equivalents: Ei, Pi, Ti, Gi, Mi, Ki."
+      type: "string"
+      immutable: false
+      required: false
+
+## Persistence configuration
+persistence:
+  __metadata:
+    label: "Persistent Storage"
+    description: "Persistent storage configuration"
+  enabled:
+    __metadata:
+      name: "enabled"
+      label: "Enabled"
+      description: "Set to true to persist the UCD appdata directory"
+      type: "boolean"
+      immutable: false
+      required: true
+  useDynamicProvisioning:
+    __metadata:
+      name: "useDynamicProvisioning"
+      label: "Use Dynamic Provisioning"
+      description: "Set to true if your cluster supports a dynamic storage provisioning class"
+      type: "boolean"
+      immutable: false
+      required: false
+
+## AppData Volume configuration
+appDataVolume:
+  __metadata:
+    label: "UrbanCode Deploy appdata Directory's Persistent Volume"
+    description: "Configuration data describing the persistent storage that contains a copy of the UCD appData directory."
+  name:
+    __metadata:
+      name: "name"
+      label: "Persistent Volume Name"
+      description: "Name of the Persistent Volume to create to hold the UCD appdata directory"
+      type: "string"
+      immutable: false
+      required: true
+  existingClaimName:
+    __metadata:
+      name: "existingClaimName"
+      label: "Existing Claim Name"
+      description: "Name of an existing Persistent Volume Claim that references the Persistent Volume holding the UCD appdata directory"
+      type: "string"
+      immutable: false
+      required: false
+  storageClassName:
+    __metadata:
+      name: "storageClassName"
+      label: "Storage Class Name"
+      description: "Name of the storage class to use to dynamically create the Persistent Volume that will hold the UCD appdata directory.  The persistence.useDynamicProvisioning field must be set to true for this to be used."
+      type: "string"
+      immutable: false
+      required: false
+  size:
+    __metadata:
+      name: "size"
+      label: "Persistent Volume Size"
+      description: "Size of the Persistent Volume that will hold the UCD appdata directory. Memory is measured in bytes. You can express memory as a plain integer or as a fixed-point integer using one of these suffixes: E, P, T, G, M, K. You can also use the power-of-two equivalents: Ei, Pi, Ti, Gi, Mi, Ki."
+      type: "string"
+      immutable: false
+      required: true
+
+## Resources configuration
+resources:
+  __metadata:
+    label: "Resources"
+    description: "Manage resource constraints for the containers running in the pod."
+  constraints:
+    enabled:
+      __metadata:
+        name: "enabled"
+        label: "Enable constraints"
+        description: "Set to true to enable constraints"
+        type: "boolean"
+        immutable: false
+        required: true
+  limits:
+    cpu:
+      __metadata:
+        name: "cpu"
+        label: "CPU limit"
+        description: "CPU resource limit. Memory is measured in bytes. You can express memory as a plain integer or as a fixed-point integer using one of these suffixes: E, P, T, G, M, K. You can also use the power-of-two equivalents: Ei, Pi, Ti, Gi, Mi, Ki."
+        type: "string"
+        immutable: false
+        required: false
+    memory:
+      __metadata:
+        name: "memory"
+        label: "Memory limit"
+        description: "Memory resource limit. Memory is measured in bytes. You can express memory as a plain integer or as a fixed-point integer using one of these suffixes: E, P, T, G, M, K. You can also use the power-of-two equivalents: Ei, Pi, Ti, Gi, Mi, Ki."
+        type: "string"
+        immutable: false
+        required: false
+  requests:
+    cpu:
+      __metadata:
+        name: "cpu"
+        label: "CPU request"
+        description: "Requested CPU allocation. Memory is measured in bytes. You can express memory as a plain integer or as a fixed-point integer using one of these suffixes: E, P, T, G, M, K. You can also use the power-of-two equivalents: Ei, Pi, Ti, Gi, Mi, Ki."
+        type: "string"
+        immutable: false
+        required: false
+    memory:
+      __metadata:
+        name: "memory"
+        label: "Memory request"
+        description: "Requested memory allocation. Memory is measured in bytes. You can express memory as a plain integer or as a fixed-point integer using one of these suffixes: E, P, T, G, M, K. You can also use the power-of-two equivalents: Ei, Pi, Ti, Gi, Mi, Ki."
+        type: "string"
+        immutable: false
+        required: false
+
+## Readiness Probe configuration
+readinessProbe:
+  __metadata:
+    label: "Readiness Probe"
+    description: "Determines if containers running in a pod are ready to receive traffic through Kubernetes Services." 
+  initialDelaySeconds:
+    __metadata:
+      name: "readinessinitialdelayseconds"
+      label: "Initial Delay"
+      description: "Number of seconds after the container has started before the readiness probe is initiated"
+      type: "string"
+      immutable: false
+      required: true
+  periodSeconds:
+    __metadata:
+      name: "readinessperiodseconds"
+      label: "Period Seconds"
+      description: "How often (in seconds) to perform the readiness probe"
+      type: "string"
+      immutable: false
+      required: true
+  failureThreshold:
+    __metadata:
+      name: "readinessfailurethreshold"
+      label: "Failure Threshold"
+      description: "When a Pod starts and the probe fails, Kubernetes will try this number times before giving up. In the case of the readiness probe, the Pod will be marked Unready."
+      type: "string"
+      immutable: false
+      required: true
+
+## Liveness Probe configuration
+livenessProbe:
+  __metadata:
+    label: "Liveness Probe"
+    description: "Detects if a long-running application is no longer responding and must be restarted."
+  initialDelaySeconds:
+    __metadata:
+      name: "livenessinitialdelayseconds"
+      label: "Initial Delay"
+      description: "Number of seconds after the container has started before the liveness probe is initiated"
+      type: "string"
+      immutable: false
+      required: true
+  periodSeconds:
+    __metadata:
+      name: "livenessperiodseconds"
+      label: "Period Seconds"
+      description: "How often (in seconds) to perform the liveness probe"
+      type: "string"
+      immutable: false
+      required: true
+  failureThreshold:
+    __metadata:
+      name: "livenessfailurethreshold"
+      label: "Failure Threshold"
+      description: "When a Pod starts and the probe fails, Kubernetes will try this number times before giving up. Giving up in the case of the liveness probe means restarting the Pod."
+      type: "string"
+      immutable: false
+      required: true

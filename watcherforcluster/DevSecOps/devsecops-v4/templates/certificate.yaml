@@ -1,0 +1,17 @@
+{{- if and .Values.service.https.enabled }}
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: {{ .Release.Name }}-ambassador-cert
+  labels:
+    app: {{ template "ambassador.name" . }}
+    chart: {{ template "ambassador.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  secretName: {{ template "ambassador.fullname" . }}-cert
+  dnsNames: ["sofy-admin.*.nip.io","api-audit.*.nip.io","billing-app.*.nip.io","mitm-service.*.nip.io","sofy-admin.*.nip.io","test-data-synth.*.nip.io","metrics.*.nip.io","dashboard.*.nip.io","sofy-admin.*.nip.io","onetest.*.nip.io","ucd-mysql.*.nip.io","hcl-ucd-prod-hl.*.nip.io","deploy.*.nip.io","jenkins-agent.*.nip.io","jenkins.*.nip.io","sofy-admin.*.nip.io","postgresql.*.nip.io","sonarqube.*.nip.io","mongodb.*.nip.io","application-api.*.nip.io","continuous-release-consumer.*.nip.io","continuous-release-poller.*.nip.io","continuous-release-ui.*.nip.io","multi-app-pipeline-api.*.nip.io","release-events-api.*.nip.io","release-events-ui.*.nip.io","reporting-consumer.*.nip.io","reporting-sync-api.*.nip.io","reporting-ui.*.nip.io","security-api.*.nip.io","velocity-rabbitmq.*.nip.io","velocity.*.nip.io","metrics.*.nip.io","dashboard.*.nip.io","sofy-admin.*.nip.io","onetest.*.nip.io","ucd-mysql.*.nip.io","hcl-ucd-prod-hl.*.nip.io","deploy.*.nip.io","jenkins-agent.*.nip.io","jenkins.*.nip.io","sofy-admin.*.nip.io","postgresql.*.nip.io","sonarqube.*.nip.io","mongodb.*.nip.io","application-api.*.nip.io","continuous-release-consumer.*.nip.io","continuous-release-poller.*.nip.io","continuous-release-ui.*.nip.io","multi-app-pipeline-api.*.nip.io","release-events-api.*.nip.io","release-events-ui.*.nip.io","reporting-consumer.*.nip.io","reporting-sync-api.*.nip.io","reporting-ui.*.nip.io","security-api.*.nip.io","velocity-rabbitmq.*.nip.io","velocity.*.nip.io","metrics.*.nip.io","dashboard.*.nip.io"]
+  issuerRef:
+    name: {{ .Release.Name }}-ambassador-cert-issuer
+    kind: Issuer
+{{- end }}

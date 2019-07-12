@@ -1,0 +1,13 @@
+{{- if .Values.service.https.enabled }}
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Issuer
+metadata:
+  name: {{ .Release.Name }}-ambassador-cert-issuer
+  labels:
+    app: {{ template "ambassador.name" . }}
+    chart: {{ template "ambassador.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+    selfSigned: {}
+{{- end }}

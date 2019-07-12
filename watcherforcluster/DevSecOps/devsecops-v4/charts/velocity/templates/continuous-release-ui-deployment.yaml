@@ -1,0 +1,124 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "velocity.fullname" . }}-continuous-release-ui
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}-continuous-release-ui
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "velocity.name" . }}-continuous-release-ui
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "velocity.name" . }}-continuous-release-ui
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: mongo-init
+          image: "busybox:latest"
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", '{{ include "mongodb.test.command" . }}']
+      {{- if not .Values.url.domain }}
+        - name: dm-init
+          image: {{ .Values.images.domainMapper }}
+          imagePullPolicy: Always
+          env:
+            - name: "CONFIGMAP_NAME"
+              value: {{ include "velocity.fullname" . }}-continuous-release-ui-env
+            - name: "NAMESPACE_NAME"
+              value: {{ .Release.Namespace }}
+            - name: "RELEASE_NAME"
+              value: {{ .Release.Name }}
+            - name: "SERVICE_NAME"
+              value: {{ include "velocity.fullname" . }}
+            - name: "ENV_NAME"
+              value: "HOME_URL"
+      serviceAccountName: {{ include "velocity.fullname" . }}-argo
+    {{- end }}
+      {{- include "pod.imagePullSecrets" . | indent 6 }}
+      containers:
+        - name: continuous-release-ui
+          image: '{{ .Values.images.continuous_release_ui }}'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          envFrom:
+          - configMapRef:
+              name: {{ include "velocity.fullname" . }}-continuous-release-ui-env
+          env:
+            - name: PORT
+              value: '80'
+            - name: ROOT_URL
+              value: {{ include "root.url.cr" . }}
+            - name: LOG_LEVEL
+              value: '{{ .Values.loglevel }}'
+            - name: MONGO_URL
+              value: {{ include "mongodb.url" . }}
+            - name: AMQP_URL
+              value: {{ include "rabbitmq.url" . }}
+            - name: SECURITY_API_URL
+              value: http://security-api:3911/api
+            - name: SECURITY_API_AUTH_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: APP_API_URL
+              value: http://application-api:3499
+            - name: APP_API_AUTH_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: RELEASE_API_URL
+              value: http://release-events-api:8080/graphql
+            - name: RELEASE_API_AUTH_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: MAP_API_URL
+              value: http://multi-app-pipeline-api:9090/v1/multi-app-pipeline/graphql
+            - name: MAP_API_AUTH_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: JWT_HMAC_KEY
+              value: '{{ .Values.hmackey }}'
+            - name: CR_CIPHER_KEY
+              value: '{{ .Values.ciphertoken }}'
+            - name: CR_HMAC_KEY
+              value: '{{ .Values.hmackey }}'
+            - name: CONNECT_URL
+              value: http://reporting-consumer:6004
+            - name: CONNECT_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: REPORTING_CONSUMER_API_URL
+              value: http://reporting-consumer:6004
+            - name: REPORTING_CONSUMER_API_AUTH_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: AUTH_TOKEN_URL
+              value: '{{ .Values.authtokenurl }}'
+            - name: DRA_API_URL
+              value: '{{ .Values.draapiurl }}'
+            - name: TOOL_CHAINS_URL
+              value: '{{ .Values.toolchainsurl }}'
+            - name: DEVOPS_MESSAGE_STORE_API
+              value: '{{ .Values.devopsmessagestoreapi }}'
+            - name: METEOR_SETTINGS
+              value: '{
+                  "public": {
+                    "requireAuth": true,
+                    "securityAuthUrl": "{{ template "root.url.securityAuth" . }}",
+                    "version": "{{ .Chart.Version }}",
+                    "features": {
+                      "SlackTask": false,
+                      "PipelineV2Task": false,
+                      "EmailNotifications": true,
+                      "EmailTask": true,
+                      "RunAnotherPlanTask": true,
+                      "Approvals": true,
+                      "ApprovalTask": true,
+                      "ServiceNowTask": true,
+                      "JenkinsTask": true
+                    },
+                    "branding": "HCL"
+                  }
+                }'
+            - name: BRANDING
+              value: HCL

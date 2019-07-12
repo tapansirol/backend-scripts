@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: reporting-consumer
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}-reporting-consumer
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: reporting-consumer-port
+      protocol: TCP
+      port: 6004
+      targetPort: 6004
+  selector:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}-reporting-consumer
+    app.kubernetes.io/instance: {{ .Release.Name }}

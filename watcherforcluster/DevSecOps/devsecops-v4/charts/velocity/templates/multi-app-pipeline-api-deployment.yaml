@@ -1,0 +1,98 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "velocity.fullname" . }}-multi-app-pipeline-api
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}-multi-app-pipeline-api
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "velocity.name" . }}-multi-app-pipeline-api
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "velocity.name" . }}-multi-app-pipeline-api
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      {{- include "pod.imagePullSecrets" . | indent 6 }}
+      initContainers:
+        - name: mongo-init
+          image: "busybox:latest"
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", '{{ include "mongodb.test.command" . }}']
+      containers:
+        - name: multi-app-pipeline-api
+          image: '{{ .Values.images.multi_app_pipeline_api }}'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9090
+          env:
+            - name: NODE_ENV
+              value: container
+            - name: PORT
+              value: '9090'
+            - name: mongo__db
+              value: multi-app-pipeline
+            - name: LOG_LEVEL
+              value: '{{ .Values.loglevel }}'
+            - name: mongo__url
+              value: {{ include "mongodb.url" . }}
+            - name: appPath
+              value: /v1/multi-app-pipeline
+            - name: authToken
+              value: '{{ .Values.apitoken }}'
+            - name: securityApi__url
+              value: http://security-api:3911
+            - name: securityApi__auth_secret
+              value: '{{ .Values.hmackey }}'
+            - name: cipher__key
+              value: '{{ .Values.ciphertoken }}'
+            - name: hmac__key
+              value: '{{ .Values.hmackey }}'
+            - name: deployPlanApi__url
+              value: http://continuous-release-ui/deploymentPlans
+            - name: deployPlanApi__cipherKey
+              value: '{{ .Values.ciphertoken }}'
+            - name: deployPlanApi__hmacKey
+              value: '{{ .Values.hmackey }}'
+            - name: applicationApi__url
+              value: http://application-api:3499
+            - name: bearerToken
+              value: '{{ .Values.apitoken }}'
+            - name: registrationApi__token
+              value: '{{ .Values.apitoken }}'
+            - name: integrationApi__token
+              value: '{{ .Values.apitoken }}'
+            - name: pipelineApi__cipherKey
+              value: '{{ .Values.ciphertoken }}'
+            - name: pipelineApi__hmacKey
+              value: '{{ .Values.hmackey }}'
+            - name: releaseEventsApi__cipherKey
+              value: '{{ .Values.ciphertoken }}'
+            - name: releaseEventsApi__hmacKey
+              value: '{{ .Values.hmackey }}'
+            - name: releaseEventsApi__url
+              value: http://release-events-api:8080/graphql
+            - name: amqp__velocity__url
+              value: {{ include "rabbitmq.url" . }}
+            - name: amqp__velocity__password
+              value: '{{ .Values.rabbitmq.password }}'
+            - name: amqp__velocity__user
+              value: '{{ .Values.rabbitmq.user }}'
+            - name: newRelic__enabled
+              value: 'false'
+            - name: redis__enabled
+              value: 'false'
+            - name: tunnel__enabled
+              value: 'false'
+            - name: serviceProvider__credentials
+              value: Y29udF9yZWxlYXNlX3N2Yzp0cDRNQk53TU0y
+            - name: BEARER_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: BRANDING
+              value: HCL

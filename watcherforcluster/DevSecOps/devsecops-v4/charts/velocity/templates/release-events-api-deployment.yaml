@@ -1,0 +1,92 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "velocity.fullname" . }}-release-events-api
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}-release-events-api
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "velocity.name" . }}-release-events-api
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "velocity.name" . }}-release-events-api
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      volumes:
+        - name: swidtag
+          configMap:
+            name: {{ include "velocity.fullname" . }}-swidtag-conf
+            items:
+              - key: swidtag
+                path: 'hcl.com_HCL_UrbanCode_Velocity_Floating_User-1.2.0.swidtag'
+      {{- include "pod.imagePullSecrets" . | indent 6 }}
+      initContainers:
+        - name: mongo-init
+          image: "busybox:latest"
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", '{{ include "mongodb.test.command" . }}']
+        - name: security-api-init
+          image: "busybox:latest"
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'until wget -T 2 security-api:3911/api/v1/status; do echo waiting for security-api service; sleep 2; done;']
+      containers:
+        - name: release-events-api
+          image: '{{ .Values.images.release_events_api }}'
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: swidtag
+              mountPath: /opt/dist/swidtag
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: '8080'
+            - name: MONGO_DB
+              value: release-events
+            - name: LOG_LEVEL
+              value: '{{ .Values.loglevel }}'
+            - name: MONGO_URL
+              value: {{ include "mongodb.url" . }}
+            - name: SECURITY_API_URL
+              value: http://security-api:3911
+            - name: SECURITY_API_AUTH_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: JWT_CIPHER_KEY
+              value: '{{ .Values.ciphertoken }}'
+            - name: JWT_HMAC_KEY
+              value: '{{ .Values.hmackey }}'
+            - name: DEPLOY_PLAN_API_URL
+              value: http://continuous-release-ui/deploymentPlans
+            - name: DEPLOY_PLAN_API_CIPHER_KEY
+              value: '{{ .Values.ciphertoken }}'
+            - name: DEPLOY_PLAN_API_HMAC_KEY
+              value: '{{ .Values.hmackey }}'
+            - name: BEARER_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: AMQP_URL
+              value: {{ include "rabbitmq.url" . }}
+            - name: MAP_API_URL
+              value: http://multi-app-pipeline-api:9090
+            - name: MAP_API_PATH
+              value: /v1/multi-app-pipeline
+            - name: MAP_API_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: REPORTING_CONSUMER_API_URL
+              value: http://reporting-consumer:6004
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: '0'
+            - name: REPORTING_UI_URL
+              value: http://reporting-ui/reports
+            - name: APP_API_URL
+              value: http://application-api:3499
+            - name: LICENSE
+              value: '{{ required "You must accept license." .Values.license }}'
+            - name: BRANDING
+              value: HCL

@@ -1,0 +1,83 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "velocity.fullname" . }}-reporting-consumer
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}-reporting-consumer
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "velocity.name" . }}-reporting-consumer
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "velocity.name" . }}-reporting-consumer
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: mongo-init
+          image: "busybox:latest"
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", '{{ include "mongodb.test.command" . }}']
+      {{- if not .Values.url.domain }}
+        - name: dm-init
+          image: {{ .Values.images.domainMapper }}
+          imagePullPolicy: Always
+          env:
+            - name: "CONFIGMAP_NAME"
+              value: {{ include "velocity.fullname" . }}-reporting-consumer-env
+            - name: "NAMESPACE_NAME"
+              value: {{ .Release.Namespace }}
+            - name: "RELEASE_NAME"
+              value: {{ .Release.Name }}
+            - name: "SERVICE_NAME"
+              value: {{ include "velocity.fullname" . }}
+            - name: "ENV_NAME"
+              value: "HOME_URL"
+      {{- end }}
+      {{- include "pod.imagePullSecrets" . | indent 6 }}
+      serviceAccountName: {{ include "velocity.fullname" . }}-argo
+      containers:
+        - name: reporting-consumer
+          image: '{{ .Values.images.reporting_consumer }}'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 6004
+          envFrom:
+            - configMapRef:
+                name: {{ include "velocity.fullname" . }}-reporting-consumer-env
+          env:
+            - name: MONGO_URL
+              value: {{ include "mongodb.url" . }}
+            - name: ENCRYPT_KEY
+              value: '{{ .Values.ciphertoken }}'
+            - name: CONSUMER_URL
+              value: '{{ template "root.url.reportingConsumer" . }}'
+            - name: HELM_VERSION
+              value: '{{ .Chart.Version }}'
+            - name: LOG_LEVEL
+              value: '{{ .Values.loglevel }}'
+            - name: AMQP_URL
+              value: {{ include "rabbitmq.url" . }}
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: '0'
+            - name: GRAPHQL_URL
+              value: http://release-events-api:8080
+            - name: BEARER_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: SECURITY_API_URL
+              value: 'http://security-api:3911'
+            - name: PLUGIN_FRAMEWORK_ENABLED
+              value: 'true'
+            - name: ARGO_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "velocity.fullname" . }}-workflow-controller-configmap
+                  key: config  
+            - name: BRANDING
+              value: HCL

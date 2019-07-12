@@ -1,0 +1,17 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: user-script
+data:
+  script.sh: |
+    #!/bin/bash
+    echo "Running script.sh..."
+    if [ ! -f ${UCD_HOME}/ext_lib/mysql-jdbc.jar ] ; then
+      echo "Copying file(s)..."
+      wget https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.15.tar.gz
+      tar -xzvf mysql-connector-java-8.0.15.tar.gz
+      mv mysql-connector-java-8.0.15/mysql-connector-java-8.0.15.jar ${UCD_HOME}/ext_lib/
+      echo "Done copying."
+    else
+      echo "File ${UCD_HOME}/ext_lib/mysql-jdbc.jar already exists."
+    fi

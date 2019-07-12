@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hcl-onetest.fullname" . }}
+  labels:
+    app: {{ include "hcl-onetest.name" . }}
+    chart: {{ include "hcl-onetest.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ include "hcl-onetest.name" . }}
+    release: {{ .Release.Name }}

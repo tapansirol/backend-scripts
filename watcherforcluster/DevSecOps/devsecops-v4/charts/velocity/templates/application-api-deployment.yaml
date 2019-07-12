@@ -1,0 +1,52 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "velocity.fullname" . }}-application-api
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}-application-api
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "velocity.name" . }}-application-api
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "velocity.name" . }}-application-api
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      {{- include "pod.imagePullSecrets" . | indent 6 }}
+      initContainers:
+        - name: mongo-init
+          image: "busybox:latest"
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", '{{ include "mongodb.test.command" . }}']
+      containers:
+        - name: application-api
+          image: '{{ .Values.images.application_api }}'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3499
+          env:
+            - name: PORT
+              value: '3499'
+            - name: LOG_LEVEL
+              value: '{{ .Values.loglevel }}'
+            - name: DB_TYPE
+              value: mongo
+            - name: MONGO_URL
+              value: {{ include "mongodb.url" . }}
+            - name: MONGO_DB
+              value: application-api
+            - name: BEARER_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: GRAPHQL_URL
+              value: http://release-events-api:8080
+            - name: AMQP_URL
+              value: {{ include "rabbitmq.url" . }}
+            - name: BRANDING
+              value: HCL

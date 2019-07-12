@@ -1,0 +1,317 @@
+env:
+  AMBASSADOR_SINGLE_NAMESPACE: 'true'
+hcl-onetest:
+  service:
+    type: ClusterIP
+  master:
+    serviceType: ClusterIP
+hcl-ucd-prod:
+  mysql:
+    service:
+      type: ClusterIP
+    master:
+      serviceType: ClusterIP
+  service:
+    type: ClusterIP
+  master:
+    serviceType: ClusterIP
+jenkins:
+  service:
+    type: ClusterIP
+  master:
+    serviceType: ClusterIP
+sofy-admin:
+  service:
+    type: ClusterIP
+  master:
+    serviceType: ClusterIP
+sonarqube:
+  postgresql:
+    service:
+      type: ClusterIP
+    master:
+      serviceType: ClusterIP
+  service:
+    type: ClusterIP
+  master:
+    serviceType: ClusterIP
+velocity:
+  mongodb:
+    service:
+      type: ClusterIP
+    master:
+      serviceType: ClusterIP
+  service:
+    type: ClusterIP
+  master:
+    serviceType: ClusterIP
+replicaCount: 1
+daemonSet: false
+imagePullSecrets: []
+securityContext: null
+image:
+  repository: quay.io/datawire/ambassador
+  tag: 0.52.0
+  pullPolicy: IfNotPresent
+nameOverride: ''
+fullnameOverride: ''
+service:
+  type: LoadBalancer
+  http:
+    enabled: true
+    port: 80
+    targetPort: 8080
+  https:
+    enabled: true
+    port: 443
+    targetPort: 8443
+adminService:
+  create: true
+  type: ClusterIP
+  port: 8877
+rbac:
+  create: true
+  namespaced: false
+serviceAccount:
+  create: true
+  name: null
+volumes: []
+volumeMounts: []
+podAnnotations:
+  prometheus.io/scrape: 'true'
+  prometheus.io/port: '9102'
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+nodeSelector: {}
+tolerations: []
+affinity: {}
+prometheusExporter:
+  enabled: false
+  repository: prom/statsd-exporter
+  tag: v0.8.1
+  pullPolicy: IfNotPresent
+prometheus:
+  alertmanager:
+    enabled: false
+  pushgateway:
+    enabled: false
+  nodeExporter.enabled: false
+  kubeStateMetrics:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200Mi
+  server:
+    global:
+      scrape_interval: 15s
+    persistentVolume:
+      enabled: true
+      size: 20Gi
+    service:
+      type: ClusterIP
+    retention: 30d
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 1024Mi
+  serviceAccounts:
+    alertmanager:
+      create: false
+    pushgateway:
+      create: false
+  serverFiles:
+    alerts: {}
+    rules: {}
+    prometheus.yml:
+      scrape_configs:
+        - job_name: prometheus
+          static_configs:
+            - targets:
+                - 'localhost:9090'
+        - job_name: kubernetes-apiservers
+          kubernetes_sd_configs:
+            - role: endpoints
+          scheme: https
+          tls_config:
+            ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            insecure_skip_verify: true
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          relabel_configs:
+            - source_labels:
+                - __meta_kubernetes_namespace
+                - __meta_kubernetes_service_name
+                - __meta_kubernetes_endpoint_port_name
+              action: keep
+              regex: default;kubernetes;https
+        - job_name: kubernetes-nodes
+          scheme: https
+          tls_config:
+            ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            insecure_skip_verify: true
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          kubernetes_sd_configs:
+            - role: node
+          relabel_configs:
+            - action: labelmap
+              regex: __meta_kubernetes_node_label_(.+)
+            - target_label: __address__
+              replacement: 'kubernetes.default.svc:443'
+            - source_labels:
+                - __meta_kubernetes_node_name
+              regex: (.+)
+              target_label: __metrics_path__
+              replacement: '/api/v1/nodes/${1}/proxy/metrics'
+        - job_name: kubernetes-nodes-cadvisor
+          scheme: https
+          tls_config:
+            ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            insecure_skip_verify: true
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          kubernetes_sd_configs:
+            - role: node
+          relabel_configs:
+            - action: labelmap
+              regex: __meta_kubernetes_node_label_(.+)
+            - target_label: __address__
+              replacement: 'kubernetes.default.svc:443'
+            - source_labels:
+                - __meta_kubernetes_node_name
+              regex: (.+)
+              target_label: __metrics_path__
+              replacement: '/api/v1/nodes/${1}/proxy/metrics/cadvisor'
+        - job_name: kubernetes-service-endpoints
+          kubernetes_sd_configs:
+            - role: endpoints
+          relabel_configs:
+            - source_labels:
+                - __meta_kubernetes_service_annotation_prometheus_io_scrape
+              action: keep
+              regex: true
+            - source_labels:
+                - __meta_kubernetes_service_annotation_prometheus_io_scheme
+              action: replace
+              target_label: __scheme__
+              regex: (https?)
+            - source_labels:
+                - __meta_kubernetes_service_annotation_prometheus_io_path
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels:
+                - __address__
+                - __meta_kubernetes_service_annotation_prometheus_io_port
+              action: replace
+              target_label: __address__
+              regex: '([^:]+)(?::\d+)?;(\d+)'
+              replacement: '$1:$2'
+            - action: labelmap
+              regex: __meta_kubernetes_service_label_(.+)
+            - source_labels:
+                - __meta_kubernetes_namespace
+              action: replace
+              target_label: kubernetes_namespace
+            - source_labels:
+                - __meta_kubernetes_service_name
+              action: replace
+              target_label: kubernetes_name
+            - source_labels:
+                - __meta_kubernetes_pod_node_name
+              action: replace
+              target_label: kubernetes_node
+        - job_name: prometheus-pushgateway
+          honor_labels: true
+          kubernetes_sd_configs:
+            - role: service
+          relabel_configs:
+            - source_labels:
+                - __meta_kubernetes_service_annotation_prometheus_io_probe
+              action: keep
+              regex: pushgateway
+        - job_name: kubernetes-services
+          metrics_path: /probe
+          params:
+            module:
+              - http_2xx
+          kubernetes_sd_configs:
+            - role: service
+          relabel_configs:
+            - source_labels:
+                - __meta_kubernetes_service_annotation_prometheus_io_probe
+              action: keep
+              regex: true
+            - source_labels:
+                - __address__
+              target_label: __param_target
+            - target_label: __address__
+              replacement: blackbox
+            - source_labels:
+                - __param_target
+              target_label: instance
+            - action: labelmap
+              regex: __meta_kubernetes_service_label_(.+)
+            - source_labels:
+                - __meta_kubernetes_namespace
+              target_label: kubernetes_namespace
+            - source_labels:
+                - __meta_kubernetes_service_name
+              target_label: kubernetes_name
+        - job_name: kubernetes-pods
+          kubernetes_sd_configs:
+            - role: pod
+          relabel_configs:
+            - source_labels:
+                - __meta_kubernetes_pod_annotation_prometheus_io_scrape
+              action: keep
+              regex: true
+            - source_labels:
+                - __meta_kubernetes_pod_annotation_prometheus_io_path
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels:
+                - __address__
+              action: keep
+              regex: '([^:]+):(\d+)'
+            - source_labels:
+                - __address__
+                - __meta_kubernetes_pod_annotation_prometheus_io_port
+              action: replace
+              regex: '([^:]+)(?::\d+)?;(\d+)'
+              replacement: '$1:$2'
+              target_label: __address__
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - source_labels:
+                - __meta_kubernetes_namespace
+              action: replace
+              target_label: kubernetes_namespace
+            - source_labels:
+                - __meta_kubernetes_pod_name
+              action: replace
+              target_label: kubernetes_pod_name
+            - source_labels:
+                - __name__
+              regex: (python_gc.*|python_info)
+              action: drop
+grafana:
+  adminUser: admin
+  adminPassword: admin
+  sidecar:
+    datasources:
+      enabled: true
+      label: grafana_datasource
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+  podAnnotations:
+    sidecar.istio.io/inject: 'false'
+  grafana.ini:
+    users:
+      default_theme: light
+    auth:
+      disable_login_form: true
+    auth.anonymous:
+      enabled: true
+      org_role: Admin

@@ -1,0 +1,62 @@
+# Default values for ibm-ucd chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Architecture - e.g. amd64, s390x, ppc64le. If left empty, arch type will try to be determined. 
+# You can use kubectl version command to determine the architecture on the desired worker node. 
+arch: "amd64"
+image:
+  repository: "gcr.io/blackjack-209019/services/ucd/ucds"
+  tag: "hcl-7.0.2.1.1013966"
+  pullPolicy: Always
+  secret: ""
+service:
+  type: NodePort
+database:
+  type: "mysql"
+  name: "hcl_ucd"
+  hostname: "ucd-mysql"
+  username: "hcl_ucd"
+  password: "password"
+  port: "3306"
+  jdbcConnUrl: ""
+secureConnections:
+  required: false
+security:
+  ucdInitPassword: "admin"
+persistence:
+  enabled: true
+  useDynamicProvisioning: true
+extLibVolume:
+  name: "ext-lib"
+  existingClaimName: ""
+  configMapName: "user-script"
+  storageClassName: "standard"
+  size: "1Gi"
+appDataVolume:
+  name: "appdata"
+  existingClaimName: ""
+  storageClassName: "standard"
+  size: "10Gi"
+resources:
+  constraints: 
+    enabled: false
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+  requests:
+    cpu: 1000m
+    memory: 1Gi
+readinessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  failureThreshold: 10
+livenessProbe:
+  initialDelaySeconds: 300
+  periodSeconds: 300
+  failureThreshold: 3
+mysql:
+  mysqlDatabase: hcl_ucd
+  mysqlUser: hcl_ucd
+  mysqlRootPassword: B1ackjack
+  mysqlPassword: password

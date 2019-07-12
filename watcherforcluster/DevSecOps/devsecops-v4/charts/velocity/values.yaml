@@ -1,0 +1,67 @@
+prefixname: velocity-se
+
+license: accept
+adminpassword: admin
+
+access:
+  key: "U2FsdGVkX19aIg1spAFIniaQ79UEWiHPFUXzrJiK5OGeXVqD+i6VM1QXRmJgFtKT9aY35F3owfcZhywzXmaWVw=="
+
+url:
+  protocol: https
+  domain: ""
+  port: ""
+
+rabbitmq:
+  url: ""
+  nodePort: 31672
+  managerPort: 15672
+  erlangCookie: 128ad9b8-3d9f-11e8-b467-0ed5f89f718c
+  user: rabbit
+  password: carrot
+
+apitoken: >-
+  33ba769bd3439ac18ba85c851af0c2931583cf76b3a0a4ef4db6f4181515e8a8b33a0a36235902b4f6707865
+
+ciphertoken: acef0b7174b45fffbe091c1737597814
+
+hmackey: ac60e2d65928fbfd5c72cd49c3fc1f01
+
+loglevel: ALL
+
+ingress:
+  enabled: false
+  path: /
+
+images:
+  application_api: 'gcr.io/blackjack-209019/blackjack/products/uc-velocity/application-api:1.0.360'
+  continuous_release_consumer: 'gcr.io/blackjack-209019/blackjack/products/uc-velocity/continuous-release-consumer:1.0.175'
+  continuous_release_poller: 'gcr.io/blackjack-209019/blackjack/products/uc-velocity/continuous-release-poller:1.0.18'
+  continuous_release_ui: 'gcr.io/blackjack-209019/blackjack/products/uc-velocity/continuous-release-ui:1.0.188'
+  multi_app_pipeline_api: 'gcr.io/blackjack-209019/blackjack/products/uc-velocity/multi-app-pipeline-api:1.0.131'
+  reporting_consumer: 'gcr.io/blackjack-209019/blackjack/products/uc-velocity/reporting-consumer:1.0.189'
+  reporting_sync_api: 'gcr.io/blackjack-209019/blackjack/products/uc-velocity/reporting-sync-api:1.0.31'
+  reporting_ui: 'gcr.io/blackjack-209019/blackjack/products/uc-velocity/reporting-ui:1.0.88'
+  release_events_api: 'gcr.io/blackjack-209019/blackjack/products/uc-velocity/release-events-api:1.0.518'
+  release_events_ui: 'gcr.io/blackjack-209019/blackjack/products/uc-velocity/release-events-ui:1.0.528'
+  security_api: 'gcr.io/blackjack-209019/blackjack/products/uc-velocity/security-api:1.0.113'
+  rabbitmq: 'bitnami/rabbitmq:3.7.9'
+  nginx: 'bitnami/nginx:1.14'
+  domainMapper: 'gcr.io/blackjack-209019/blackjack/domain-mapper:0.1.0'
+
+mongodb:
+  existingdbHost: ""
+  install: true
+  persistence:
+    existingClaim: ""
+    enabled: true
+    size: 8Gi
+    # storageClass: ""
+  service:
+    type: ClusterIP
+    port: 27017
+  usePassword: false
+  # Set below values only if "usePassword=true". Otherwise with current version (viz. 5.15.1) of mongodb helm there will be an error.
+  # mongodbRootPassword: admin
+  # mongodbUsername: velocity
+  # mongodbPassword: velocity
+  # mongodbDatabase: velocity

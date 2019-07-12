@@ -1,0 +1,39 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "velocity.fullname" . }}-ingress
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/configuration-snippet: proxy_pass_request_headers on;
+    kubernetes.io/ingress.class: nginx
+spec:
+  tls:
+  - secretName: {{ include "velocity.fullname" . }}-tls-secret
+    hosts:
+    - '{{ .Values.url.domain }}'
+  backend:
+    serviceName: {{ include "velocity.fullname" . }}
+    servicePort: 8080
+  rules:
+  - host: '{{ .Values.url.domain }}'
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ include "velocity.fullname" . }}
+          servicePort: 8080
+      - backend:
+          serviceName: velocity-rabbitmq
+          servicePort: 5672
+      - path: /rabbit/
+        backend:
+          serviceName: velocity-rabbitmq
+          servicePort: 15672
+{{- end -}}

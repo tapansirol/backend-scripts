@@ -1,0 +1,327 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ambassador.fullname" . }}
+  annotations:
+    getambassador.io/config: |
+     {{- if .Values.service.https.enabled }}
+      ---
+      apiVersion: ambassador/v1
+      kind: Module
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: tls
+      config:
+        server:
+          enabled: True
+          redirect_cleartext_from: 8080
+          secret: {{ template "ambassador.fullname" . }}-cert
+      ---
+      apiVersion: ambassador/v1
+      kind: Module
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: ambassador
+      config:
+        service_port: 8443
+      {{ else }}
+      ---
+      apiVersion: ambassador/v1
+      kind: Module
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: ambassador
+      config:
+        service_port: 8080
+      {{- end }}
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: hcl-onetest
+      prefix: /
+      host: onetest\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://{{ .Release.Name }}-hcl-onetest:80
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: ucd-mysql
+      prefix: /
+      host: ucd-mysql\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://ucd-mysql:3306
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: hcl-ucd-prod-hl
+      prefix: /
+      host: hcl-ucd-prod-hl\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: https://{{ .Release.Name }}-hcl-ucd-prod-hl:8443
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: hcl-ucd-prod
+      prefix: /
+      host: deploy\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://{{ .Release.Name }}-hcl-ucd-prod:8080
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: jenkins-agent
+      prefix: /
+      host: jenkins-agent\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://{{ .Release.Name }}-jenkins-agent:50000
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: jenkins
+      prefix: /
+      host: jenkins\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://{{ .Release.Name }}-jenkins:8080
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: sofy-admin
+      prefix: /
+      host: sofy-admin\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://{{ .Release.Name }}-sofy-admin:80
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: postgresql
+      prefix: /
+      host: postgresql\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://{{ .Release.Name }}-postgresql:5432
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: sonarqube
+      prefix: /
+      host: sonarqube\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://{{ .Release.Name }}-sonarqube:9000
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: mongodb
+      prefix: /
+      host: mongodb\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://{{ .Release.Name }}-mongodb:27017
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: application-api
+      prefix: /
+      host: application-api\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://application-api:3499
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: continuous-release-consumer
+      prefix: /
+      host: continuous-release-consumer\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://continuous-release-consumer:3411
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: continuous-release-poller
+      prefix: /
+      host: continuous-release-poller\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://continuous-release-poller:6004
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: continuous-release-ui
+      prefix: /
+      host: continuous-release-ui\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://continuous-release-ui:80
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: multi-app-pipeline-api
+      prefix: /
+      host: multi-app-pipeline-api\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://multi-app-pipeline-api:9090
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: release-events-api
+      prefix: /
+      host: release-events-api\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://release-events-api:8080
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: release-events-ui
+      prefix: /
+      host: release-events-ui\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://release-events-ui:3010
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: reporting-consumer
+      prefix: /
+      host: reporting-consumer\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://reporting-consumer:6004
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: reporting-sync-api
+      prefix: /
+      host: reporting-sync-api\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://reporting-sync-api:3499
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: reporting-ui
+      prefix: /
+      host: reporting-ui\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://reporting-ui:80
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: security-api
+      prefix: /
+      host: security-api\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://security-api:3911
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: velocity-rabbitmq
+      prefix: /
+      host: velocity-rabbitmq\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://velocity-rabbitmq:4369
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: velocity
+      prefix: /
+      host: velocity\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://{{ .Release.Name }}-velocity:8080
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: prometheus-server
+      prefix: /
+      host: metrics\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://{{ .Release.Name }}-prometheus-server:80
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      ambassador_id: {{ .Release.Namespace }}-{{ .Release.Name }}
+      name: grafana
+      prefix: /
+      host: dashboard\..*
+      host_regex: true
+      timeout_ms: 10000
+      service: http://{{ .Release.Name }}-grafana:80
+  labels:
+    app.kubernetes.io/name: {{ include "ambassador.name" . }}
+    helm.sh/chart: {{ include "ambassador.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    service: ambassador
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  {{- if .Values.service.loadBalancerIP }}
+  loadBalancerIP: "{{ .Values.service.loadBalancerIP }}"
+  {{- end }}
+  {{- if .Values.service.externalTrafficPolicy }}
+  externalTrafficPolicy: "{{ .Values.service.externalTrafficPolicy }}"
+  {{- end }}
+  ports:
+    {{- if .Values.service.http.enabled }}
+    - port: {{ .Values.service.http.port }}
+      targetPort: {{ .Values.service.http.targetPort }}
+      protocol: TCP
+      name: http
+      {{- with .Values.service.http.nodePort }}
+      nodePort: {{ toYaml . }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.service.https.enabled }}
+    - port: {{ .Values.service.https.port }}
+      targetPort: {{ .Values.service.https.targetPort }}
+      protocol: TCP
+      name: https
+      {{- with .Values.service.https.nodePort }}
+      nodePort: {{ toYaml . }}
+      {{- end }}
+    {{- end }}
+  selector:
+    app.kubernetes.io/name: {{ include "ambassador.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  {{- with .Values.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}

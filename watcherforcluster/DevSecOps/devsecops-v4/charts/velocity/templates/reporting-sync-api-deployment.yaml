@@ -1,0 +1,41 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "velocity.fullname" . }}-reporting-sync-api
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}-reporting-sync-api
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "velocity.name" . }}-reporting-sync-api
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "velocity.name" . }}-reporting-sync-api
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      {{- include "pod.imagePullSecrets" . | indent 6 }}
+      containers:
+        - name: reporting-sync-api
+          image: '{{ .Values.images.reporting_sync_api }}'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3499
+          env:
+            - name: NODE_ENV
+              value: onprem
+            - name: PORT
+              value: '3499'
+            - name: LOG_LEVEL
+              value: '{{ .Values.loglevel }}'
+            - name: BEARER_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: AMQP_URL
+              value: {{ include "rabbitmq.url" . }}
+            - name: BRANDING
+              value: HCL

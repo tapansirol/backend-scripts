@@ -1,0 +1,18 @@
+# ConfigMap that specifies the datasource that will be picked by grafana sidecar and configured
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-grafana-datasource
+  labels:
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    grafana_datasource : "true"
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://{{ .Release.Name }}-prometheus-server
+        access: proxy
+        isDefault: true

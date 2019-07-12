@@ -1,0 +1,27 @@
+dependencies:
+- name: hcl-ucd-prod
+  repository: https://test.pnpsofy.com/cm
+  version: 1.0.0
+- name: hcl-onetest
+  repository: https://test.pnpsofy.com/cm
+  version: 0.1.1
+- name: velocity
+  repository: https://test.pnpsofy.com/cm
+  version: 1.2.3
+- name: sonarqube
+  repository: https://kubernetes-charts.storage.googleapis.com
+  version: 1.0.0
+- name: jenkins
+  repository: https://kubernetes-charts.storage.googleapis.com
+  version: 1.1.12
+- name: sofy-admin
+  repository: https://test.pnpsofy.com/cm
+  version: 0.2.3
+- name: prometheus
+  repository: https://kubernetes-charts.storage.googleapis.com
+  version: 8.1.0
+- name: grafana
+  repository: https://kubernetes-charts.storage.googleapis.com
+  version: 3.3.0
+digest: sha256:01b274654cf64386d7401335d87317159048921a1932e95fb69f0bd709924c1a
+generated: 2019-05-03T10:37:40.206625413Z

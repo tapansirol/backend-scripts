@@ -1,0 +1,76 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "velocity.fullname" . }}-security-api
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}-security-api
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "velocity.name" . }}-security-api
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "velocity.name" . }}-security-api
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      {{- include "pod.imagePullSecrets" . | indent 6 }}
+      initContainers:
+        - name: mongo-init
+          image: "busybox:latest"
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", '{{ include "mongodb.test.command" . }}']
+      containers:
+        - name: security-api
+          image: '{{ .Values.images.security_api }}'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3911
+          env:
+            - name: NODE_ENV
+              value: local
+            - name: PORT
+              value: '3911'
+            - name: MONGO_DB
+              value: security
+            - name: LOG_LEVEL
+              value: '{{ .Values.loglevel }}'
+            - name: MONGO_URL
+              value: {{ include "mongodb.url" . }}
+            - name: BEARER_TOKEN
+              value: '{{ .Values.apitoken }}'
+            - name: SECURITY_AUTH_SECRET
+              value: '{{ .Values.hmackey }}'
+            - name: JWT_CIPHER_KEY
+              value: '{{ .Values.ciphertoken }}'
+            - name: JWT_HMAC_KEY
+              value: '{{ .Values.hmackey }}'
+            - name: NODE_TLS_REJECT_UNAUTHORIZED
+              value: '0'
+            - name: TIAM_CLIENT_SECRET
+              value: 72heYpy2weRih8I3KTxdMVOy90bBpQB0WDY3fH2IixOaAtwnRU
+            - name: ACCESS_KEY
+              value: '{{ .Values.access.key }}'
+            - name: AMQP_URL
+              value: {{ include "rabbitmq.url" . }}
+            - name: BRANDING
+              value: HCL
+          livenessProbe:
+            httpGet:
+              path: /api/v1/status
+              port: 3911
+            initialDelaySeconds: 15
+            timeoutSeconds: 2
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/v1/status
+              port: 3911
+            initialDelaySeconds: 15
+            timeoutSeconds: 2
+            periodSeconds: 5

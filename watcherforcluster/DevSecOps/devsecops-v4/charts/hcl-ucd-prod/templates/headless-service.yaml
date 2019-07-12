@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "fullname" . }}-hl
+  labels:
+    app: {{ template "fullname" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ports:
+    - port: 8443
+      name: https
+    - port: 7918
+      name: jms
+    - port: 7919
+      name: wss
+  clusterIP: None
+  selector:
+    app: {{ template "fullname" . }}

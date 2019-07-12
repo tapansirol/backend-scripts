@@ -1,0 +1,45 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "velocity.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "velocity.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "velocity.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: nginx
+          image: '{{ .Values.images.nginx }}'
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /opt/bitnami/nginx/conf/
+            - name: nginx-pid
+              mountPath: /opt/bitnami/nginx/pid
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: {{ include "velocity.fullname" . }}-nginx-conf
+            items:
+            - key: nginx.conf
+              path: nginx.conf
+            - key: server.key
+              path: ssl/server.key
+            - key: server.crt
+              path: ssl/server.crt
+        - name: nginx-pid
+          emptyDir: {}

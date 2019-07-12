@@ -1,0 +1,134 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: workflows.argoproj.io
+  namespace: {{ .Release.Namespace }}
+spec:
+  group: argoproj.io
+  names:
+    kind: Workflow
+    plural: workflows
+    shortNames:
+    - wf
+  scope: Namespaced
+  version: v1alpha1
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "velocity.fullname" . }}-argo
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "velocity.fullname" . }}-argo-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  - services
+  - pods
+  - pods/exec
+  - pods/logs
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - watch
+  - list
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - create
+  - delete
+- apiGroups:
+  - argoproj.io
+  resources:
+  - workflows
+  - workflows/finalizers
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "velocity.fullname" . }}-argo-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "velocity.fullname" . }}-argo-role
+subjects:
+- kind: ServiceAccount
+  name: {{ include "velocity.fullname" . }}-argo
+
+---
+
+apiVersion: v1
+data:
+  config: |
+    containerRuntimeExecutor: kubelet
+    namespace: {{ .Release.Namespace }}
+kind: ConfigMap
+metadata:
+  name: {{ include "velocity.fullname" . }}-workflow-controller-configmap
+  labels:
+    app: velocity
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "velocity.fullname" . }}-workflow-controller
+  labels:
+    app.kubernetes.io/name: {{ include "velocity.name" . }}-workflow-controller
+    helm.sh/chart: {{ include "velocity.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app: velocity
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "velocity.fullname" . }}-workflow-controller
+  template:
+    metadata:
+      labels:
+        app: {{ include "velocity.fullname" . }}-workflow-controller
+    spec:
+      containers:
+      - args:
+        - --configmap
+        - {{ include "velocity.fullname" . }}-workflow-controller-configmap
+        - --executor-image
+        - argoproj/argoexec:v2.3.0-rc2
+        command:
+        - workflow-controller
+        image: argoproj/workflow-controller:v2.3.0-rc2
+        name: {{ include "velocity.fullname" . }}-workflow-controller
+      serviceAccountName: {{ include "velocity.fullname" . }}-argo

@@ -1,0 +1,47 @@
+Congratulations on deploying your solution.
+
+NOTE: It may take a few minutes for the solution's EXTERNAL-IP to be ready. To check the status:
+  kubectl get svc -w {{ .Release.Name }}-{{ .Chart.Name }}
+
+{{- if .Values.service.https.enabled }}
+Since you have enabled HTTPS, please ensure that you have cert-manager installed in the cluster.
+
+Without this TLS termination will not be enabled, and you might not be able to access the application/s.
+
+Also note that this instance of ambassador uses self-signed certificate by default. So you will get a message warning about insecure connection before accessing the application.
+
+It is recommended to create new CA certificates. More information can be found at:
+
+https://cert-manager.readthedocs.io/en/latest/index.html
+https://www.getambassador.io/user-guide/tls-termination
+
+If you wish to continue with HTTP, run a helm upgrade with service.https.enabled=false. Clear all the cache and cookies, and reload the application again.
+
+{{- end }}
+To access your solution's services:
+    export SOLUTION_IP=$(kubectl get svc {{ .Release.Name }}-{{ .Chart.Name }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://onetest.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://ucd-mysql.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://hcl-ucd-prod-hl.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://deploy.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://jenkins-agent.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://jenkins.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://sofy-admin.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://postgresql.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://sonarqube.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://mongodb.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://application-api.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://continuous-release-consumer.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://continuous-release-poller.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://continuous-release-ui.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://multi-app-pipeline-api.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://release-events-api.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://release-events-ui.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://reporting-consumer.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://reporting-sync-api.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://reporting-ui.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://security-api.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://velocity-rabbitmq.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://velocity.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://metrics.$SOLUTION_IP.nip.io
+  curl http{{- if .Values.service.https.enabled -}}s{{- end -}}://dashboard.$SOLUTION_IP.nip.io

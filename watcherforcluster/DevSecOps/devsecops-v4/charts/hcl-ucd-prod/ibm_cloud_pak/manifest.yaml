@@ -1,0 +1,21 @@
+charts:
+  - archive: file:ibm-ucd-prod-@helmchartversion@.tgz
+    repository-keys:
+      - image.repository
+
+images:
+- image: ucd-server/ucds:@serverbuildversion@.@serverbuildlife@
+  references:
+  - repository: ucd-server/ucds:@serverbuildversion@.@serverbuildlife@
+    platform:
+      os: linux
+      architecture: amd64
+  - repository: ucd-server/ucds:@serverbuildversion@.@serverbuildlife@
+    platform:
+      os: linux
+      architecture: ppc64le
+  - repository: ucd-server/ucds:@serverbuildversion@.@serverbuildlife@
+    platform:
+      os: linux
+      architecture: s390x
+
